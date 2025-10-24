@@ -1,15 +1,4 @@
 # 🌊 SISTEM DE DETECȚIE INUNDAȚII
-## Proiect Laborator Microcontrolere - USV Suceava
-
----
-
-## 👨‍🎓 Informații Generale
-
-**Student:** Zaharia Buzdea  
-**Universitate:** Ștefan cel Mare Suceava  
-**Disciplina:** Laborator Microcontrolere  
-**Data:** Octombrie 2025  
-**Profesor:** [Numele profesorului]
 
 ---
 
@@ -123,7 +112,7 @@ if (HAL_GPIO_ReadPin(WATER_SENSOR_Pin) == HIGH) {
 - **Rezoluție:** 320x240 pixeli
 - **Culori:** 16 bpp (65536 culori)
 - **Elemente UI:**
-  - Logo USV (180x200 px)
+  - Logo personalizat (180x200 px)
   - Afișaj temperatură (live update)
   - Afișaj umiditate (live update)
   - Font Verdana 10/20/40 pt
@@ -245,7 +234,7 @@ if (HAL_GPIO_ReadPin(WATER_SENSOR_Pin) == HIGH) {
 ```
 ┌───────────────────────────────┐
 │                               │
-│       [Logo USV]              │
+│       [Logo]                  │
 │                               │
 │   🌡️ Temperatură: 23.4°C    │
 │   💧 Umiditate:   45.8%       │
@@ -310,24 +299,8 @@ Proiectul a demonstrat cu succes integrarea complexă a:
 
 ---
 
-## 📧 Contact și Suport
-
-**Email:** [email@student.usv.ro]  
-**GitHub:** [link repo GitHub dacă există]  
-**LinkedIn:** [profil LinkedIn]
-
-**Pentru întrebări tehnice, consultați:**
-- 📖 DOCUMENTATIE_PROIECT.md (detalii complete)
-- 📖 readme.md (ghid rapid)
-- 📧 Email personal
-
----
-
 **🏆 Status Proiect: COMPLET ȘI FUNCȚIONAL**
 
-*Testat și validat pe STM32F429I-DISCO REV D*  
-*Octombrie 2025 - Universitatea Ștefan cel Mare Suceava*
+*Testat și validat pe STM32F429I-DISCO REV D*
 
 ---
-
-**© 2025 Zaharia Buzdea - Toate drepturile rezervate pentru scopuri educaționale**

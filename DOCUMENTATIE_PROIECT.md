@@ -1,10 +1,5 @@
 # 📘 DOCUMENTAȚIE PROIECT - SISTEM DE DETECȚIE INUNDAȚII
 
-**Universitatea Ștefan cel Mare Suceava (USV)**  
-**Laborator Microcontrolere**  
-**Autor:** Zaharia Buzdea  
-**Data:** Octombrie 2025
-
 ---
 
 ## 📋 CUPRINS
@@ -141,7 +136,7 @@ Alimentare:
 - **Adâncime culoare:** 16 bpp (RGB565)
 - **Framebuffer:** 2 buffere × 150 KB = 300 KB (în SDRAM)
 - **Font:** Verdana 10, 20, 40 pt (4bpp)
-- **Imagini:** Logo USV 180x200 ARGB8888
+- **Imagini:** Logo personalizat 180x200 ARGB8888
 
 ---
 
@@ -291,7 +286,7 @@ void StartTask_ControlOut(void *argument) {
 
 **Componente UI:**
 
-- 🖼️ **Logo USV** (180x200 px)
+- 🖼️ **Logo personalizat** (180x200 px)
 - 🌡️ **TextArea Temperatură** (wildcardBuffer: `tempBuffer`)
 - 💧 **TextArea Umiditate** (wildcardBuffer: `humBuffer`)
 - 🔤 **Font:** Verdana 10/20/40 pt
@@ -366,9 +361,6 @@ void StartTask_ReadDHT22(void *argument) {
 
 **Pasul 2:** Clonați/Descărcați proiectul
 
-```bash
-# Salvați directorul ProiectInundatie în:
-C:\Users\<User>\Desktop\Proiect_uC_Tema_20_Zaharia_Buzdea\
 ```
 
 **Pasul 3:** Deschideți proiectul în STM32CubeIDE
@@ -443,7 +435,7 @@ Buzzer:
    - Inițializare LCD
    - Pornire FreeRTOS
 3. **Afișare interfață grafică:**
-   - Logo USV
+   - Logo personalizat
    - Temperatură: `--.-°C` (până la prima citire)
    - Umiditate: `--.-%`
 
@@ -455,7 +447,7 @@ Buzzer:
 ┌─────────────────────────────┐
 │  📱 Display LCD             │
 │                             │
-│  🏫 [Logo USV]              │
+│  🏫 [Logo]                  │
 │                             │
 │  🌡️ Temp: 23.5°C           │
 │  💧 Umid: 45.2%             │
@@ -477,7 +469,7 @@ Buzzer:
 ┌─────────────────────────────┐
 │  📱 Display LCD             │
 │                             │
-│  🏫 [Logo USV]              │
+│  🏫 [Logo]                  │
 │                             │
 │  🌡️ Temp: 24.1°C           │
 │  💧 Umid: 67.8%             │
@@ -849,19 +841,6 @@ arm-none-eabi-objdump -d STM32F429I_DISCO_REV_D01.elf > disasm.txt
 
 ---
 
-## 📧 CONTACT ȘI SUPORT
-
-**Autor:** Zaharia Buzdea  
-**Instituție:** Universitatea Ștefan cel Mare Suceava  
-**Curs:** Laborator Microcontrolere  
-**Profesor Coordonator:** [Nume Profesor]  
-**Data predare:** Octombrie 2025
-
-**Pentru întrebări:**
-- 📧 Email: [email student]
-- 🏫 Birou: [nr. birou profesor]
-- 📅 Consultații: [program consultații]
-
 ---
 
 **📌 NOTĂ FINALĂ:**
@@ -875,9 +854,5 @@ Acest proiect demonstrează integrarea complexă a următoarelor concepte:
 - ✅ Sincronizare task-uri și partajare date
 - ✅ Debugging și optimizare memorie
 
-**Total ore lucrate:** ~40 ore (design hardware + software + debugging + documentație)
 
 ---
-
-*Documentație generată în STM32CubeIDE - Octombrie 2025*  
-*© 2025 Zaharia Buzdea - Universitatea Ștefan cel Mare Suceava*

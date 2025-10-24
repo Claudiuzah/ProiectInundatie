@@ -1,8 +1,6 @@
 # ✅ LISTA DE VERIFICARE PROIECT - EVALUARE
 
-**Student:** Zaharia Buzdea  
-**Proiect:** Sistem Detecție Inundații cu STM32F429I-DISCO  
-**Data predare:** Octombrie 2025
+**Proiect:** Sistem Detecție Inundații cu STM32F429I-DISCO
 
 ---
 
@@ -51,7 +49,7 @@
 | 3.5 | Activare buzzer automat | ✅ | Alarmă sonoră simultană cu releul |
 | 3.6 | Dezactivare automată | ✅ | La dispariție apă, releul/buzzer se opresc |
 | 3.7 | Afișare date pe LCD | ✅ | Font Verdana, actualizare dinamică |
-| 3.8 | Logo/Grafică personalizată | ✅ | Logo USV 180x200 pixeli |
+| 3.8 | Logo/Grafică personalizată | ✅ | Logo personalizat 180x200 pixeli |
 
 **Total Funcționalități: 8/8 ✅**
 
@@ -105,30 +103,6 @@
 
 ---
 
-## 📊 SCOR FINAL
-
-```
-┌─────────────────────────────────────────────────────┐
-│              REZUMAT EVALUARE PROIECT               │
-├─────────────────────────────────────────────────────┤
-│                                                     │
-│  Hardware:        7/7   (100%) ✅                   │
-│  Software:        7/7   (100%) ✅                   │
-│  Funcționalități: 8/8   (100%) ✅                   │
-│  Documentație:    7/7   (100%) ✅                   │
-│  Calitate Cod:    7/7   (100%) ✅                   │
-│  Teste:           7/7   (100%) ✅                   │
-│                                                     │
-│  ────────────────────────────────────────────────   │
-│  TOTAL:          43/43  (100%) ✅                   │
-│                                                     │
-│  ⭐⭐⭐⭐⭐ PROIECT COMPLET ȘI FUNCȚIONAL ⭐⭐⭐⭐⭐  │
-│                                                     │
-└─────────────────────────────────────────────────────┘
-```
-
----
-
 ## 🎯 PUNCTE FORTE ALE PROIECTULUI
 
 ### Implementare Tehnică
@@ -162,30 +136,6 @@
 - 🔄 **Protecție concurență** - Mutex pentru variabile globale partajate
 - 🔄 **Watchdog timer** - IWDG pentru recovery la freeze-uri
 - 🔄 **Low-power mode** - Sleep mode când LCD inactiv
-
----
-
-## 📝 NOTĂ PROFESOR
-
-```
-┌──────────────────────────────────────────────────────┐
-│                                                      │
-│  EVALUARE:                                           │
-│                                                      │
-│  Nota propusă: _____ / 10                           │
-│                                                      │
-│  Observații:                                         │
-│  _________________________________________________   │
-│  _________________________________________________   │
-│  _________________________________________________   │
-│  _________________________________________________   │
-│                                                      │
-│  Semnătura profesor:                                │
-│                                                      │
-│  Data: __________________                            │
-│                                                      │
-└──────────────────────────────────────────────────────┘
-```
 
 ---
 
@@ -258,19 +208,9 @@ Următoarele fișiere sunt incluse în proiect:
 │  ☑ Scheme și diagrame                               │
 │  ☑ Fișiere binare pentru flash                      │
 │                                                      │
-│  Student: Zaharia Buzdea                            │
-│  Semnătură: ___________________                     │
-│  Data: ___ octombrie 2025                            │
-│                                                      │
 └──────────────────────────────────────────────────────┘
 ```
 
 ---
 
-**📧 Contact pentru clarificări:**
-- Email: [email@student.usv.ro]
-- Consultații: [program consultații profesor]
-
----
-
-*Sfârșitul listei de verificare - Succes la evaluare! 🎓*
+*Sfârșitul listei de verificare*

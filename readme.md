@@ -1,7 +1,5 @@
 # 🌊 SISTEM DETECȚIE INUNDAȚII - STM32F429I-DISCO
 
-**Proiect Laborator Microcontrolere - Universitatea Ștefan cel Mare Suceava**
-
 ---
 
 ## 📋 Descriere Scurtă
@@ -151,31 +149,6 @@ Proiectul are ~294 KB cod → Keil MDK Free (32 KB) nu funcționează!
 | **Reacție inundație** | <500 ms |
 
 ---
-
-## 🎓 Autor și Contact
-
-**Student:** Zaharia Buzdea  
-**Universitate:** Ștefan cel Mare Suceava  
-**Facultate:** [Facultatea ta]  
-**Curs:** Laborator Microcontrolere  
-**Data:** Octombrie 2025
-
-**📧 Contact:** [email@student.usv.ro]
-
----
-
-## 📜 Licență
-
-Proiect educațional - Universitatea Ștefan cel Mare Suceava  
-© 2025 Zaharia Buzdea
-
-**Biblioteci folosite:**
-- STM32Cube HAL (BSD-3-Clause)
-- FreeRTOS (MIT)
-- TouchGFX Framework (ST Ultimate Liberty SLA0044)
-
----
-
 ## 🔗 Resurse Utile
 
 - [STM32F429I-DISCO Documentation](https://www.st.com/en/evaluation-tools/32f429idiscovery.html)
