@@ -167,119 +167,202 @@ uint16_t                  IOE_ReadMultiple(uint8_t Addr, uint8_t Reg, uint8_t *p
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
+
+/* ============================================================================
+ * VARIABILE GLOBALE
+ * ============================================================================ */
+
+// Driver LCD (pointăr către funcții de control ILI9341)
 static LCD_DrvTypeDef* LcdDrv;
 
-uint32_t I2c3Timeout = I2C3_TIMEOUT_MAX; /*<! Value of Timeout when I2C communication fails */
-uint32_t Spi5Timeout = SPI5_TIMEOUT_MAX; /*<! Value of Timeout when SPI communication fails */
+// Timeout-uri pentru comunicații periferice
+uint32_t I2c3Timeout = I2C3_TIMEOUT_MAX; // Timeout I2C (touch controller STMPE811)
+uint32_t Spi5Timeout = SPI5_TIMEOUT_MAX; // Timeout SPI (LCD ILI9341)
 
-// --- Funcții pentru delay în microsecunde (folosind DWT) ---
+/* ============================================================================
+ * FUNCȚII DELAY MICROSECUNDE (folosind DWT Cycle Counter)
+ * ============================================================================
+ * 
+ * DWT (Data Watchpoint and Trace) oferă un contor de cicluri CPU pentru
+ * măsurători de timp precise. La 180 MHz, 1 μs = 180 cicluri.
+ */
+
+/**
+ * @brief Inițializează DWT Cycle Counter
+ */
 __STATIC_INLINE void DWT_Init(void)
 {
-  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk; // Activează TRC
-  DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;   // Activează Cycle Counter
+  CoreDebug->DEMCR |= CoreDebug_DEMCR_TRCENA_Msk; // Activează Trace Enable
+  DWT->CTRL |= DWT_CTRL_CYCCNTENA_Msk;            // Pornește Cycle Counter
 }
 
+/**
+ * @brief Delay precis în microsecunde (μs)
+ * @param us: Numărul de microsecunde de așteptat
+ * @note  Folosește DWT->CYCCNT pentru precizie maximă
+ */
 __STATIC_INLINE void delay_us(volatile uint32_t us)
 {
   uint32_t start = DWT->CYCCNT;
-  uint32_t cycles = us * (SystemCoreClock / 1000000); // Calculează nr. de cicluri
-  while ((DWT->CYCCNT - start) < cycles);
+  uint32_t cycles = us * (SystemCoreClock / 1000000); // us * 180 (la 180MHz)
+  while ((DWT->CYCCNT - start) < cycles); // Busy-wait până la expirare
 }
-// -----------------------------------------------------------
 
-// --- Driver DHT22 ---
-// Funcție pentru a seta pinul DHT22 ca Ieșire
+/* ============================================================================
+ * DRIVER SENZOR DHT22 (AM2302) - TEMPERATURĂ ȘI UMIDITATE
+ * ============================================================================
+ * 
+ * Protocol comunicație: 1-Wire (Half-Duplex)
+ * -------------------------
+ * 1. MCU trimite start signal (trage pin LOW > 1ms)
+ * 2. DHT22 răspunde cu: LOW 80μs + HIGH 80μs
+ * 3. Transmite 40 biți date (5 octeți):
+ *    - Byte 0-1: Umiditate (16 bit, rezoluție 0.1%)
+ *    - Byte 2-3: Temperatură (16 bit, rezoluție 0.1°C, bit 15 = semn)
+ *    - Byte 4:   Checksum (sum(byte0..3) & 0xFF)
+ * 4. Decodare bit: HIGH 26-28μs = '0', HIGH 70μs = '1'
+ * 
+ * Rezoluție: 0.1°C, 0.1% RH
+ * Acuratețe: ±0.5°C, ±2% RH
+ * Interval măsurare: Min. 2 secunde
+ */
+
+/**
+ * @brief Configurează pinul DHT22 ca ieșire (Push-Pull)
+ */
 void DHT22_Set_Pin_Output(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  GPIO_InitStruct.Pin = DHT22_PIN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; // Push-Pull
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pin = DHT22_PIN_Pin;        // PG9
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP; // Push-Pull (poate trage LOW/HIGH)
+  GPIO_InitStruct.Pull = GPIO_NOPULL;         // Fără pull-up/pull-down
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(DHT22_PIN_GPIO_Port, &GPIO_InitStruct);
 }
 
-// Funcție pentru a seta pinul DHT22 ca Intrare
+/**
+ * @brief Configurează pinul DHT22 ca intrare (pentru citire date)
+ */
 void DHT22_Set_Pin_Input(void)
 {
   GPIO_InitTypeDef GPIO_InitStruct = {0};
-  GPIO_InitStruct.Pin = DHT22_PIN_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_INPUT;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pin = DHT22_PIN_Pin;    // PG9
+  GPIO_InitStruct.Mode = GPIO_MODE_INPUT; // Mod INPUT (citire stare)
+  GPIO_InitStruct.Pull = GPIO_NOPULL;     // Fără pull-up (DHT22 are pull-up intern)
   HAL_GPIO_Init(DHT22_PIN_GPIO_Port, &GPIO_InitStruct);
 }
 
-// Funcția principală de citire DHT22
-// Returnează 1 la succes, 0 la eșec
+/**
+ * @brief Citește date de la DHT22 (temperatură și umiditate)
+ * 
+ * @param temperature: Pointer pentru salvare temperatură (°C)
+ * @param humidity:    Pointer pentru salvare umiditate (% RH)
+ * @return uint8_t:    1 = succes, 0 = eroare (timeout sau checksum invalid)
+ * 
+ * @note Durata execuție: ~20-30 ms
+ * @note Interval minim între citiri: 2 secunde
+ */
 uint8_t DHT22_Read(float* temperature, float* humidity)
 {
-  uint8_t data[5] = {0, 0, 0, 0, 0};
+  uint8_t data[5] = {0, 0, 0, 0, 0}; // Buffer 5 octeți date
   uint16_t timer;
 
-  // 1. Trimite semnalul de start (trage pinul pe LOW > 1ms)
-  DHT22_Set_Pin_Output();
-  HAL_GPIO_WritePin(DHT22_PIN_GPIO_Port, DHT22_PIN_Pin, GPIO_PIN_RESET);
-  delay_us(1100); // Așteaptă 1.1ms
-  HAL_GPIO_WritePin(DHT22_PIN_GPIO_Port, DHT22_PIN_Pin, GPIO_PIN_SET);
-  delay_us(30);
+  /* -------------------------------------------------------------------------
+   * PASUL 1: Trimite Start Signal (LOW > 1ms)
+   * ------------------------------------------------------------------------- */
+  DHT22_Set_Pin_Output();  // Setează pin ca ieșire
+  HAL_GPIO_WritePin(DHT22_PIN_GPIO_Port, DHT22_PIN_Pin, GPIO_PIN_RESET); // Trage LOW
+  delay_us(1100);          // Așteaptă 1.1 ms (minim 1 ms necesar)
+  HAL_GPIO_WritePin(DHT22_PIN_GPIO_Port, DHT22_PIN_Pin, GPIO_PIN_SET);   // Eliberează (HIGH)
+  delay_us(30);            // Pauză scurtă (20-40 μs)
 
-  // 2. Setează pinul ca Intrare pentru a citi răspunsul senzorului
+  /* -------------------------------------------------------------------------
+   * PASUL 2: Setează pin ca intrare pentru citire răspuns
+   * ------------------------------------------------------------------------- */
   DHT22_Set_Pin_Input();
 
-  // 3. Așteaptă răspunsul senzorului (LOW ~80us, apoi HIGH ~80us)
+  /* -------------------------------------------------------------------------
+   * PASUL 3: Așteaptă răspuns DHT22 (LOW ~80μs + HIGH ~80μs)
+   * ------------------------------------------------------------------------- */
+  
+  // Așteaptă să scadă pe LOW (DHT preia controlul)
   timer = 0;
   while(HAL_GPIO_ReadPin(DHT22_PIN_GPIO_Port, DHT22_PIN_Pin) == GPIO_PIN_SET) {
-    if(++timer > 500) return 0; // Timeout
+    if(++timer > 500) return 0; // Timeout - senzor nu răspunde
     delay_us(1);
   }
+  
+  // Așteaptă LOW 80μs (răspuns prezență)
   timer = 0;
   while(HAL_GPIO_ReadPin(DHT22_PIN_GPIO_Port, DHT22_PIN_Pin) == GPIO_PIN_RESET) {
     if(++timer > 500) return 0; // Timeout
     delay_us(1);
   }
+  
+  // Așteaptă HIGH 80μs (gata de transmisie)
   timer = 0;
   while(HAL_GPIO_ReadPin(DHT22_PIN_GPIO_Port, DHT22_PIN_Pin) == GPIO_PIN_SET) {
     if(++timer > 500) return 0; // Timeout
     delay_us(1);
   }
 
-  // 4. Citește 40 de biți (5 octeți)
+  /* -------------------------------------------------------------------------
+   * PASUL 4: Citește 40 de biți (5 octeți × 8 biți)
+   * ------------------------------------------------------------------------- 
+   * Fiecare bit începe cu LOW ~50μs, apoi:
+   *   - HIGH 26-28μs → bit '0'
+   *   - HIGH ~70μs   → bit '1'
+   */
   for (int i = 0; i < 5; i++) {
     for (int j = 0; j < 8; j++) {
+      
+      // Așteaptă începutul bit (LOW → HIGH)
       timer = 0;
       while (HAL_GPIO_ReadPin(DHT22_PIN_GPIO_Port, DHT22_PIN_Pin) == GPIO_PIN_RESET) {
         if(++timer > 500) return 0; // Timeout
         delay_us(1);
       }
 
+      // Măsoară durata HIGH (determină valoarea bitului)
       timer = 0;
       while (HAL_GPIO_ReadPin(DHT22_PIN_GPIO_Port, DHT22_PIN_Pin) == GPIO_PIN_SET) {
         if(++timer > 500) return 0; // Timeout
         delay_us(1);
       }
 
-      // Dacă durata stării HIGH e > 40us, e bit '1', altfel e '0'
+      // Decodare: dacă HIGH > 40μs → bit '1', altfel '0'
       if (timer > 40) {
-        data[i] |= (1 << (7 - j));
+        data[i] |= (1 << (7 - j)); // Setează bitul corespunzător
       }
     }
   }
 
-  // 5. Verifică Suma de Control (Checksum)
+  /* -------------------------------------------------------------------------
+   * PASUL 5: Verifică Checksum (validare integritate date)
+   * ------------------------------------------------------------------------- */
   if ((uint8_t)(data[0] + data[1] + data[2] + data[3]) != data[4]) {
-    return 0; // Eroare Checksum
+    return 0; // Eroare: checksum incorect (date corupte)
   }
 
-  // 6. Calculează valorile
+  /* -------------------------------------------------------------------------
+   * PASUL 6: Calculează valorile finale
+   * ------------------------------------------------------------------------- */
+  
+  // Umiditate: 16 biți (data[0] MSB, data[1] LSB), rezoluție 0.1%
   *humidity = (float)((data[0] << 8) | data[1]) / 10.0;
+  
+  // Temperatură: 16 biți (data[2] MSB, data[3] LSB), rezoluție 0.1°C
   *temperature = (float)(((data[2] & 0x7F) << 8) | data[3]) / 10.0;
-  if (data[2] & 0x80) { // Verifică dacă temperatura e negativă
-    *temperature *= -1.0;
+  
+  // Verifică bit semn (bit 15 al temperaturii = bitul 7 din data[2])
+  if (data[2] & 0x80) {
+    *temperature *= -1.0; // Temperatură negativă
   }
 
-  return 1; // Succes
+  return 1; // Succes - date valide
 }
-// --- Sfârșit Driver DHT22 ---
+
+/* Sfârșitul Driver DHT22 */
 
 
 /* USER CODE END 0 */
